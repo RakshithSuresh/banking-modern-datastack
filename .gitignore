@@ -1,0 +1,64 @@
+# You want .gitignore to ignore:
+
+# Secrets (very important)
+# Generated/cache files (noise)
+# Local machine files (VS Code, macOS)
+# Temporary build artifacts
+
+# But you should not ignore actual project code/config accidentally.
+
+# -----------------------------
+# Secrets / Environment
+# -----------------------------
+.env
+.env.*
+
+# -----------------------------
+# Python
+# -----------------------------
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# -----------------------------
+# IDE / OS
+# -----------------------------
+.vscode/
+.idea/
+.DS_Store
+
+# -----------------------------
+# Docker / Airflow local artifacts
+# -----------------------------
+docker/logs/
+docker/postgres/
+docker/minio/
+
+# Optional (only if empty/generated)
+docker/plugins/
+
+docker-compose.override.yml
+
+# -----------------------------
+# dbt generated artifacts
+# -----------------------------
+banking_dbt/target/
+banking_dbt/logs/
+banking_dbt/.dbt/
+
+# Optional: ignore only if unused
+# banking_dbt/analyses/
+# banking_dbt/seeds/
+# banking_dbt/tests/
+
+# -----------------------------
+# Generic logs
+# -----------------------------
+logs/
+*.log
+
+# -----------------------------
+# GitHub Actions cache
+# -----------------------------
+.github/.cache/
