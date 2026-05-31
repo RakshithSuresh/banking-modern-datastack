@@ -62,3 +62,4 @@ logs/
 # GitHub Actions cache
 # -----------------------------
 .github/.cache/
+*.parquet
