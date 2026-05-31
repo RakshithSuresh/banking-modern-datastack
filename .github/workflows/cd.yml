@@ -53,8 +53,6 @@
 # dbt Cloud runs:
 # staging → snapshots → gold marts
 
-
-```yaml
 # Name shown in GitHub Actions UI
 name: CD
 
