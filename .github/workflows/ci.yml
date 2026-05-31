@@ -1,0 +1,82 @@
+# CI acts as a automatic code reviewer + validator
+# Meaning: “Whenever code changes, automatically check that it doesn’t break things.”
+
+# Example workflow:
+
+# You make code change
+#       ↓
+# push to feature branch/dev branch
+#       ↓
+# GitHub automatically runs checks
+#       ↓
+# PASS ✅ or FAIL ❌
+#       ↓
+# Then create PR(Pull Request) to main
+
+# Example in your project
+
+# Suppose tomorrow you accidentally break:
+
+# consumer/kafka_to_s3.py
+
+# by missing a bracket:
+
+# print("hello"
+
+# You push code.
+
+# CI runs:
+
+# python -m compileall .
+
+# and fails.
+
+# GitHub says:
+
+# ❌ CI failed
+# Syntax error
+
+# before you merge to main.
+
+# That is CI.
+
+
+
+name: CI
+
+on:
+  push:
+    branches: [ main, dev ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install ruff
+
+      - name: Run Python lint checks
+        run: |
+          ruff check .
+
+      - name: Validate Docker Compose file
+        run: |
+          docker compose config
+
+      - name: Check Python files compile
+        run: |
+          python -m compileall consumer data-generator kafka-debezium docker/dags

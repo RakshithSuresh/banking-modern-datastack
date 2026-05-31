@@ -1,0 +1,162 @@
+# What is CD?
+
+# CD = Continuous Delivery / Continuous Deployment
+
+# Meaning:
+
+# “After code is approved/merged, automatically do something.”
+
+# That “something” depends on project.
+
+# Examples:
+
+# Software engineering
+# merge to main
+# ↓
+# deploy app to production server
+# Data engineering
+
+# Could be:
+
+# merge to main
+# ↓
+# run dbt production job
+
+# or:
+
+# merge to main
+# ↓
+# restart airflow service
+
+# or:
+
+# merge to main
+# ↓
+# deploy Docker container
+
+# In your case:
+
+# merge to main
+# ↓
+# trigger dbt Cloud job
+
+# would be CD.
+
+# CI = check code
+# CD = do something after merge
+
+
+# Name of workflow shown in GitHub Actions UI
+name: CI
+
+# Defines WHEN this workflow should run
+on:
+
+  # Run workflow whenever code is pushed
+  push:
+
+    # Only run if push happens to these branches
+    branches:
+      - main
+      - dev
+
+  # Run workflow when a pull request is opened
+  # into main branch
+  pull_request:
+    branches:
+      - main
+
+
+# Jobs = actual tasks GitHub Actions executes
+jobs:
+
+  # Name of our job
+  validate-project:
+
+    # GitHub creates a temporary Ubuntu VM
+    # to run all commands below
+    runs-on: ubuntu-latest
+
+    # Steps = sequence of commands
+    steps:
+
+      # Step 1:
+      # Clone/download your GitHub repository
+      # into GitHub runner machine
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+
+      # Step 2:
+      # Install Python so GitHub runner can run
+      # your python scripts
+      - name: Setup Python
+        uses: actions/setup-python@v5
+
+        # Choose python version
+        with:
+          python-version: "3.12"
+
+
+      # Step 3:
+      # Install project dependencies
+      # from requirements.txt
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+          # Ruff = Python linter
+          # helps catch code mistakes
+          pip install ruff
+
+
+      # Step 4:
+      # Run linting checks
+      # Example:
+      # bad formatting
+      # unused imports
+      # syntax issues
+      - name: Run Python lint checks
+        run: |
+          ruff check .
+
+
+      # Step 5:
+      # Validate docker-compose.yml
+      #
+      # This catches:
+      # indentation issues
+      # broken syntax
+      # invalid compose config
+      - name: Validate Docker Compose
+        run: |
+          docker compose config
+
+
+      # Step 6:
+      # Check Python syntax
+      #
+      # compileall checks if python files
+      # can compile successfully
+      #
+      # Example:
+      # missing brackets
+      # syntax errors
+      # bad imports
+      - name: Validate Python files
+        run: |
+          python -m compileall \
+            consumer \
+            data-generator \
+            kafka-debezium \
+            docker/dags
+
+
+      # Step 7 (Optional)
+      # Verify Airflow DAG files import correctly
+      #
+      # This helps catch broken DAG code
+      - name: Validate Airflow DAG imports
+        run: |
+          python docker/dags/s3_to_snowflake_dag.py
