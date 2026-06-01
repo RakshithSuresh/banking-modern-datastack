@@ -15,3 +15,7 @@ pandas
 
 #dbt
 dbt-snowflake
+
+#great expectations
+great_expectations
+snowflake-sqlalchemy

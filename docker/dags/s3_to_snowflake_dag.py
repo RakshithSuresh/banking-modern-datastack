@@ -5,6 +5,7 @@ from airflow.operators.python import PythonOperator
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 from airflow.operators.trigger_dagrun import TriggerDagRunOperator
+from airflow.operators.bash import BashOperator
 
 load_dotenv()
 
@@ -189,7 +190,7 @@ with DAG(
     dag_id="s3_to_snowflake_bronze",
     default_args=default_args,
     description="Load S3 parquet files into Snowflake Bronze layer",
-    schedule_interval="*/5 * * * *",
+    schedule_interval="*/30 * * * *",
     start_date=datetime(2025, 1, 1),
     catchup=False,
 ) as dag:
@@ -229,7 +230,11 @@ with DAG(
     wait_for_completion=False,
     )
     
+    validate_gold_tables = BashOperator(
+    task_id="validate_gold_tables",
+    bash_command="python /opt/airflow/dags/validate_gold_tables.py",
+    )
     # --------------------------------------------------------
     # DAG dependency
     # --------------------------------------------------------
-    setup_task >> [load_customers, load_accounts, load_transactions] >> trigger_dbt_cloud
+setup_task >> [load_customers, load_accounts, load_transactions] >> trigger_dbt_cloud >> validate_gold_tables
